@@ -1,0 +1,789 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+    <title>MMR CUSTOMIZE BY CYCLONE</title>
+    <!-- FontAwesome icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+    <style>
+        :root {
+            --primary: #06b6d4; 
+            --primary-glow: rgba(6, 182, 212, 0.4);
+            --bg-dark: #07090e;
+            --glass-bg: rgba(15, 23, 42, 0.88);
+            --glass-border: rgba(6, 182, 212, 0.3);
+            --text-main: #f8fafc;
+            --accent: #f59e0b;
+            --accent-glow: rgba(245, 158, 11, 0.35);
+            --neon-glow: 0 0 18px rgba(6, 182, 212, 0.25);
+            --card-bg: rgba(2, 6, 23, 0.7);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html, body { height: 100%; width: 100%; overflow: hidden; background: var(--bg-dark); font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; color: var(--text-main); }
+
+        /* Animated grid background effect */
+        body::before {
+            content: "";
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: radial-gradient(circle at 50% 50%, rgba(6, 182, 212, 0.05) 0%, transparent 80%),
+                        linear-gradient(to right, rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+                        linear-gradient(to bottom, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+            background-size: 100% 100%, 40px 40px, 40px 40px;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* 2x2 Main Grid Layout */
+        .grid { 
+            position: relative;
+            z-index: 1;
+            height: 100vh; 
+            display: grid; 
+            gap: 10px; 
+            padding: 10px; 
+            grid-template-columns: 1fr 1fr; 
+            grid-template-rows: 1fr 1fr; 
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
+        }
+        
+        /* Box Styling with Header Overlay & Cyber Accent */
+        .box { 
+            position: relative; 
+            border-radius: 12px; 
+            overflow: hidden; 
+            border: 1px solid var(--glass-border); 
+            background: #000; 
+            box-shadow: var(--neon-glow); 
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .box:hover {
+            border-color: rgba(6, 182, 212, 0.6);
+            box-shadow: 0 0 25px rgba(6, 182, 212, 0.35);
+        }
+
+        /* Box Top Bar Info Overlay */
+        .box-header {
+            height: 32px;
+            background: rgba(10, 15, 28, 0.9);
+            border-bottom: 1px solid rgba(6, 182, 212, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 10px;
+            font-size: 11px;
+            z-index: 5;
+            backdrop-filter: blur(8px);
+        }
+
+        .box-title {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-weight: 700;
+            color: var(--primary);
+            letter-spacing: 0.5px;
+        }
+
+        .box-badge {
+            background: rgba(6, 182, 212, 0.15);
+            color: #67e8f9;
+            border: 1px solid rgba(6, 182, 212, 0.4);
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-family: monospace;
+            font-size: 10px;
+            white-space: nowrap;
+            max-width: 180px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .box-actions {
+            display: flex;
+            gap: 4px;
+        }
+
+        .box-action-btn {
+            background: transparent;
+            border: none;
+            color: #94a3b8;
+            cursor: pointer;
+            padding: 3px 6px;
+            border-radius: 4px;
+            font-size: 11px;
+            transition: all 0.2s;
+        }
+
+        .box-action-btn:hover {
+            color: var(--primary);
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .iframe-wrapper {
+            flex: 1;
+            width: 100%;
+            height: calc(100% - 32px);
+            position: relative;
+        }
+
+        iframe { 
+            width: 100%; 
+            height: 100%; 
+            border: none; 
+            background: #000; 
+        }
+
+        /* Maximized Box Effect */
+        .box.maximized {
+            position: fixed !important;
+            top: 0 !important;
+            left: 0 !important;
+            width: 100vw !important;
+            height: 100vh !important;
+            z-index: 99999 !important;
+            border-radius: 0 !important;
+            border: none !important;
+        }
+
+        /* Floating Sidebar Toggle Button */
+        .menuBtn { 
+            position: fixed; 
+            top: 50%; 
+            right: 0; 
+            transform: translateY(-50%); 
+            z-index: 10000; 
+            width: 38px; 
+            height: 70px; 
+            border-radius: 14px 0 0 14px; 
+            background: var(--glass-bg); 
+            color: var(--primary); 
+            border: 1px solid var(--primary); 
+            border-right: none; 
+            cursor: pointer; 
+            font-size: 18px; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            backdrop-filter: blur(14px); 
+            box-shadow: -4px 0 25px rgba(6, 182, 212, 0.35); 
+            transition: all 0.25s ease;
+        }
+
+        .menuBtn:hover {
+            width: 44px;
+            color: #fff;
+            background: rgba(6, 182, 212, 0.3);
+            box-shadow: -6px 0 30px rgba(6, 182, 212, 0.5);
+        }
+
+        .menuBtn.hidden { opacity: 0; pointer-events: none; transform: translateY(-50%) translateX(100%); }
+
+        /* Sidebar Navigation Drawer */
+        .sidebar { 
+            position: fixed; 
+            top: 0; 
+            right: -380px; 
+            width: 350px; 
+            height: 100%; 
+            background: var(--glass-bg); 
+            backdrop-filter: blur(25px); 
+            z-index: 10002; 
+            padding: 20px; 
+            transition: right 0.35s cubic-bezier(0.4, 0, 0.2, 1); 
+            color: var(--text-main); 
+            overflow-y: auto; 
+            box-shadow: -10px 0 35px rgba(0,0,0,0.8); 
+            border-left: 1px solid var(--glass-border); 
+        }
+
+        .sidebar.active { right: 0; }
+
+        /* Sidebar Scrollbar */
+        .sidebar::-webkit-scrollbar { width: 4px; }
+        .sidebar::-webkit-scrollbar-thumb { background: rgba(6, 182, 212, 0.4); border-radius: 4px; }
+
+        /* Overlay Backdrop */
+        .menu-overlay { 
+            position: fixed; 
+            top: 0; 
+            left: 0; 
+            width: 100%; 
+            height: 100%; 
+            background: rgba(0, 0, 0, 0.65); 
+            z-index: 10001; 
+            display: none; 
+            backdrop-filter: blur(4px); 
+        }
+        .menu-overlay.active { display: block; }
+
+        /* Section Title Styling */
+        .section-title { 
+            color: var(--primary); 
+            margin: 18px 0 10px; 
+            font-weight: 700; 
+            border-bottom: 1px solid rgba(6, 182, 212, 0.3); 
+            padding-bottom: 6px; 
+            font-size: 11px; 
+            text-transform: uppercase; 
+            letter-spacing: 1.2px; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+        }
+
+        /* Buttons Styling */
+        .nav-btn { 
+            width: 100%; 
+            padding: 10px 14px; 
+            margin: 5px 0; 
+            background: rgba(255,255,255,0.04); 
+            color: var(--text-main); 
+            border: 1px solid rgba(255,255,255,0.08); 
+            border-radius: 8px; 
+            cursor: pointer; 
+            font-size: 12.5px; 
+            font-weight: 500; 
+            text-align: left; 
+            transition: all 0.2s; 
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .nav-btn:hover { 
+            background: rgba(6, 182, 212, 0.15); 
+            border-color: var(--primary); 
+            box-shadow: 0 0 12px rgba(6,182,212,0.25); 
+            transform: translateX(-2px);
+        }
+
+        .btn-highlight { 
+            background: rgba(245, 158, 11, 0.15); 
+            border-color: rgba(245, 158, 11, 0.4); 
+            color: #fde68a; 
+            font-weight: 600; 
+        }
+
+        .btn-highlight:hover { 
+            background: var(--accent); 
+            color: #000; 
+            box-shadow: 0 0 15px rgba(245,158,11,0.4);
+        }
+
+        /* Link Customizer Form Box */
+        .link-editor-container { 
+            background: var(--card-bg); 
+            padding: 12px; 
+            border-radius: 10px; 
+            border: 1px solid rgba(255,255,255,0.08); 
+            margin-top: 6px; 
+        }
+
+        .editor-sub-header {
+            font-size: 11px;
+            color: #94a3b8;
+            margin: 8px 0 6px 0;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .link-edit-row { 
+            display: flex; 
+            gap: 8px; 
+            margin-bottom: 8px; 
+            align-items: center; 
+        }
+
+        .link-edit-row span { 
+            font-size: 11px; 
+            color: #94a3b8; 
+            width: 75px; 
+            font-weight: 600; 
+            flex-shrink: 0;
+        }
+
+        .link-edit-row input { 
+            flex: 1; 
+            background: rgba(255,255,255,0.06); 
+            border: 1px solid rgba(255,255,255,0.15); 
+            border-radius: 6px; 
+            color: #fff; 
+            padding: 6px 10px; 
+            font-size: 11.5px; 
+            font-family: monospace;
+            outline: none; 
+            transition: all 0.2s;
+        }
+
+        .link-edit-row input:focus { 
+            border-color: var(--primary); 
+            box-shadow: 0 0 8px rgba(6,182,212,0.3); 
+            background: rgba(6,182,212,0.08);
+        }
+
+        .save-links-btn { 
+            width: 100%; 
+            padding: 10px; 
+            background: linear-gradient(135deg, #059669, #10b981); 
+            color: white; 
+            border: none; 
+            border-radius: 8px; 
+            font-weight: bold; 
+            font-size: 12px; 
+            cursor: pointer; 
+            margin-top: 10px; 
+            transition: all 0.2s; 
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
+        }
+
+        .save-links-btn:hover { 
+            background: linear-gradient(135deg, #047857, #059669); 
+            box-shadow: 0 0 15px rgba(16, 185, 129, 0.4);
+        }
+
+        /* Mini Box Controls Grid */
+        .controls-grid { 
+            display: grid; 
+            grid-template-columns: 1fr 1fr; 
+            gap: 8px; 
+            margin-bottom: 10px; 
+        }
+
+        .mini-control { 
+            display: flex; 
+            flex-direction: column; 
+            gap: 6px; 
+            background: var(--card-bg); 
+            padding: 8px 10px; 
+            border-radius: 8px; 
+            border: 1px solid rgba(255,255,255,0.06); 
+            align-items: center; 
+        }
+
+        .mini-control span { 
+            font-size: 11px; 
+            font-weight: 700; 
+            color: var(--primary); 
+        }
+
+        .mini-control-btns { 
+            display: flex; 
+            gap: 4px; 
+            width: 100%; 
+            justify-content: center; 
+        }
+
+        .btn-icon { 
+            flex: 1; 
+            padding: 6px 0; 
+            border: none; 
+            border-radius: 6px; 
+            cursor: pointer; 
+            color: white; 
+            font-size: 11px; 
+            text-align: center; 
+            transition: all 0.2s; 
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-icon:hover { 
+            filter: brightness(1.25); 
+            transform: scale(1.05);
+        }
+
+        /* Exit Fullscreen Floating Button */
+        .exit-fs-btn { 
+            display: none; 
+            position: fixed; 
+            top: 14px; 
+            left: 50%; 
+            transform: translateX(-50%); 
+            z-index: 2147483647; 
+            padding: 8px 20px; 
+            background: rgba(239, 68, 68, 0.9); 
+            color: white; 
+            border: 1px solid rgba(255, 255, 255, 0.3); 
+            border-radius: 20px; 
+            font-weight: bold; 
+            cursor: pointer; 
+            box-shadow: 0 0 20px rgba(239,68,68,0.5); 
+            font-size: 12px; 
+            letter-spacing: 0.5px; 
+            backdrop-filter: blur(8px);
+            transition: all 0.2s;
+        }
+
+        .exit-fs-btn:hover {
+            background: #dc2626;
+            transform: translateX(-50%) scale(1.05);
+        }
+
+        /* Toast Notification Styling */
+        .toast-notification {
+            position: fixed;
+            bottom: -60px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(16, 185, 129, 0.95);
+            color: #fff;
+            padding: 10px 22px;
+            border-radius: 30px;
+            font-size: 13px;
+            font-weight: 600;
+            z-index: 10005;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.5);
+            backdrop-filter: blur(8px);
+            transition: bottom 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .toast-notification.show {
+            bottom: 24px;
+        }
+    </style>
+</head>
+<body>
+
+<!-- 2x2 Grid Layout with 4 Iframe Boxes -->
+<div class="grid" id="viewGrid">
+    <div class="box" id="b1">
+        <div class="box-header">
+            <div class="box-title"><i class="fa-solid fa-server"></i> BOX 1</div>
+            <div class="box-badge" id="badge1">Loading...</div>
+            <div class="box-actions">
+                <button class="box-action-btn" onclick="reloadBox('f1')" title="Reload Box"><i class="fa-solid fa-rotate-right"></i></button>
+                <button class="box-action-btn" onclick="toggleMaximize('b1')" title="Maximize"><i class="fa-solid fa-expand"></i></button>
+                <button class="box-action-btn" onclick="openNewTab('f1')" title="Open New Tab"><i class="fa-solid fa-arrow-up-right-from-square"></i></button>
+            </div>
+        </div>
+        <div class="iframe-wrapper"><iframe id="f1" src=""></iframe></div>
+    </div>
+
+    <div class="box" id="b2">
+        <div class="box-header">
+            <div class="box-title"><i class="fa-solid fa-server"></i> BOX 2</div>
+            <div class="box-badge" id="badge2">Loading...</div>
+            <div class="box-actions">
+                <button class="box-action-btn" onclick="reloadBox('f2')" title="Reload Box"><i class="fa-solid fa-rotate-right"></i></button>
+                <button class="box-action-btn" onclick="toggleMaximize('b2')" title="Maximize"><i class="fa-solid fa-expand"></i></button>
+                <button class="box-action-btn" onclick="openNewTab('f2')" title="Open New Tab"><i class="fa-solid fa-arrow-up-right-from-square"></i></button>
+            </div>
+        </div>
+        <div class="iframe-wrapper"><iframe id="f2" src=""></iframe></div>
+    </div>
+
+    <div class="box" id="b3">
+        <div class="box-header">
+            <div class="box-title"><i class="fa-solid fa-server"></i> BOX 3</div>
+            <div class="box-badge" id="badge3">Loading...</div>
+            <div class="box-actions">
+                <button class="box-action-btn" onclick="reloadBox('f3')" title="Reload Box"><i class="fa-solid fa-rotate-right"></i></button>
+                <button class="box-action-btn" onclick="toggleMaximize('b3')" title="Maximize"><i class="fa-solid fa-expand"></i></button>
+                <button class="box-action-btn" onclick="openNewTab('f3')" title="Open New Tab"><i class="fa-solid fa-arrow-up-right-from-square"></i></button>
+            </div>
+        </div>
+        <div class="iframe-wrapper"><iframe id="f3" src=""></iframe></div>
+    </div>
+
+    <div class="box" id="b4">
+        <div class="box-header">
+            <div class="box-title"><i class="fa-solid fa-server"></i> BOX 4</div>
+            <div class="box-badge" id="badge4">Loading...</div>
+            <div class="box-actions">
+                <button class="box-action-btn" onclick="reloadBox('f4')" title="Reload Box"><i class="fa-solid fa-rotate-right"></i></button>
+                <button class="box-action-btn" onclick="toggleMaximize('b4')" title="Maximize"><i class="fa-solid fa-expand"></i></button>
+                <button class="box-action-btn" onclick="openNewTab('f4')" title="Open New Tab"><i class="fa-solid fa-arrow-up-right-from-square"></i></button>
+            </div>
+        </div>
+        <div class="iframe-wrapper"><iframe id="f4" src=""></iframe></div>
+    </div>
+</div>
+
+<!-- Floating Controls & Drawer Button -->
+<button class="menuBtn" id="menuBtnToggle" onclick="openMenu()"><i class="fa-solid fa-sliders"></i></button>
+<div class="menu-overlay" id="menuOverlay" onclick="closeMenu()"></div>
+<button class="exit-fs-btn" id="exitFsBtn" onclick="exitMaximize()"><i class="fa-solid fa-xmark"></i> CLOSE FULLSCREEN</button>
+
+<!-- Custom Toast Notification -->
+<div class="toast-notification" id="toastNotice"><i class="fa-solid fa-circle-check"></i> <span id="toastMsg">Saved successfully!</span></div>
+
+<!-- Sidebar Control Drawer -->
+<div class="sidebar" id="sidebarMenu">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 12px; border-bottom: 1px solid rgba(6,182,212,0.3); padding-bottom: 10px;">
+        <div>
+            <h2 style="font-size: 15px; color: var(--primary); letter-spacing: 0.8px; font-weight:800;">CYCLONE CONTROL</h2>
+            <div style="font-size: 10px; color: #64748b; margin-top:2px;">MMR CUSTOM MULTI-PANEL</div>
+        </div>
+        <button onclick="closeMenu()" style="background:none; border:none; color:#94a3b8; font-size:18px; cursor:pointer;"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+
+    <div class="section-title"><span><i class="fa-solid fa-bolt"></i> QUICK ACCESS</span></div>
+    <div id="dynamicNavContainer">
+        <!-- Quick navigation buttons injected dynamically -->
+    </div>
+
+    <div class="section-title"><span><i class="fa-solid fa-sliders"></i> CUSTOMIZE BOX CODES</span></div>
+    <div class="link-editor-container">
+        <div class="editor-sub-header"><i class="fa-solid fa-link"></i> Individual Box Registration Codes</div>
+        <div class="link-edit-row">
+            <span>Box 1 Code</span>
+            <input type="text" id="editRegBox1" placeholder="/?dl=9jqm90">
+        </div>
+        <div class="link-edit-row">
+            <span>Box 2 Code</span>
+            <input type="text" id="editRegBox2" placeholder="/?dl=ddw7cs">
+        </div>
+        <div class="link-edit-row">
+            <span>Box 3 Code</span>
+            <input type="text" id="editRegBox3" placeholder="/?dl=edzskt">
+        </div>
+        <div class="link-edit-row">
+            <span>Box 4 Code</span>
+            <input type="text" id="editRegBox4" placeholder="/?dl=1vznwe">
+        </div>
+
+        <div class="editor-sub-header" style="margin-top:12px;"><i class="fa-solid fa-compass"></i> Shared Page Paths</div>
+        <div class="link-edit-row">
+            <span>Claim Page</span>
+            <input type="text" id="editClaimPath" placeholder="/home/event">
+        </div>
+        <div class="link-edit-row">
+            <span>Profile Path</span>
+            <input type="text" id="editProfilePath" placeholder="/home/mine">
+        </div>
+        <div class="link-edit-row">
+            <span>Lottery Path</span>
+            <input type="text" id="editLotteryPath" placeholder="/home/lottery?id=133000">
+        </div>
+
+        <button class="save-links-btn" onclick="saveCustomPaths()"><i class="fa-solid fa-floppy-disk"></i> SAVE & RELOAD ALL</button>
+    </div>
+
+    <div class="section-title"><span><i class="fa-solid fa-list-check"></i> GLOBAL ACTIONS</span></div>
+    <button class="nav-btn" onclick="loadAllRegisterPaths()"><i class="fa-solid fa-user-plus" style="color:#06b6d4"></i> Reset to Default Reg Codes</button>
+    <button class="nav-btn" onclick="loadAllPath('/home/lottery/record?id=133000&type=unsettled')"><i class="fa-solid fa-clock-rotate-left" style="color:#f59e0b"></i> Bet History (Unsettled)</button>
+    <button class="nav-btn" style="border-color: rgba(6,182,212,0.4);" onclick="reloadAll()"><i class="fa-solid fa-rotate" style="color:#10b981"></i> Reload All Grid Windows</button>
+
+    <div class="section-title"><span><i class="fa-solid fa-grid-2"></i> QUICK BOX CONTROLS</span></div>
+    <div class="controls-grid">
+        <script>
+            [1, 2, 3, 4].forEach((num) => {
+                document.write(`
+                    <div class="mini-control">
+                        <span>Box ${num}</span>
+                        <div class="mini-control-btns">
+                            <button class="btn-icon" style="background:#0284c7" onclick="reloadBox('f${num}')" title="Reload Box ${num}"><i class="fa-solid fa-rotate-right"></i></button>
+                            <button class="btn-icon" style="background:#e11d48" onclick="toggleMaximize('b${num}')" title="Maximize Box ${num}"><i class="fa-solid fa-expand"></i></button>
+                            <button class="btn-icon" style="background:#059669" onclick="openNewTab('f${num}')" title="Open Box ${num} in New Tab"><i class="fa-solid fa-arrow-up-right-from-square"></i></button>
+                        </div>
+                    </div>
+                `);
+            });
+        </script>
+    </div>
+</div>
+
+<script>
+    // Target base domain endpoints for each box
+    const domains = {
+        'f1': 'https://mmr.game', 
+        'f2': 'https://mmmr.club', 
+        'f3': 'https://www.mmmr.club', 
+        'f4': 'https://www.mmrgame.app'
+    };
+
+    // Default individual registration codes per box + shared quick access paths
+    let currentSettings = {
+        box1Reg: '/?dl=9jqm90',
+        box2Reg: '/?dl=ddw7cs',
+        box3Reg: '/?dl=edzskt',
+        box4Reg: '/?dl=1vznwe',
+        claim: '/home/event',
+        profile: '/home/mine',
+        lottery: '/home/lottery?id=133000'
+    };
+
+    // Toast notification function
+    function showToast(message) {
+        const toast = document.getElementById('toastNotice');
+        document.getElementById('toastMsg').textContent = message;
+        toast.classList.add('show');
+        setTimeout(() => {
+            toast.classList.remove('show');
+        }, 3000);
+    }
+
+    // Load saved path configurations from LocalStorage
+    function loadSavedPaths() {
+        const saved = localStorage.getItem('cyclone_custom_box_paths');
+        if (saved) {
+            try {
+                const parsed = JSON.parse(saved);
+                currentSettings = { ...currentSettings, ...parsed };
+            } catch(e) {
+                console.error('Failed to parse saved path settings', e);
+            }
+        }
+        
+        // Populate inputs in sidebar menu
+        document.getElementById('editRegBox1').value = currentSettings.box1Reg;
+        document.getElementById('editRegBox2').value = currentSettings.box2Reg;
+        document.getElementById('editRegBox3').value = currentSettings.box3Reg;
+        document.getElementById('editRegBox4').value = currentSettings.box4Reg;
+        
+        document.getElementById('editClaimPath').value = currentSettings.claim;
+        document.getElementById('editProfilePath').value = currentSettings.profile;
+        document.getElementById('editLotteryPath').value = currentSettings.lottery;
+
+        renderNavButtons();
+    }
+
+    // Dynamic buttons in drawer
+    function renderNavButtons() {
+        const container = document.getElementById('dynamicNavContainer');
+        container.innerHTML = `
+            <button class="nav-btn" onclick="loadAllRegisterPaths()"><i class="fa-solid fa-user-plus" style="color:#38bdf8"></i> Register Codes (Individual)</button>
+            <button class="nav-btn" onclick="loadAllPath('${currentSettings.claim}')"><i class="fa-solid fa-gift" style="color:#f472b6"></i> Shared Claim Page</button>
+            <button class="nav-btn" onclick="loadAllPath('${currentSettings.profile}')"><i class="fa-solid fa-id-card" style="color:#a78bfa"></i> Shared Profile Page</button>
+            <button class="nav-btn btn-highlight" onclick="loadAllPath('${currentSettings.lottery}')"><i class="fa-solid fa-fire" style="color:#fbbf24"></i> 🔥 Bet 9.85x Odd Page</button>
+        `;
+    }
+
+    // Save path form inputs to LocalStorage & update boxes
+    function saveCustomPaths() {
+        currentSettings.box1Reg = document.getElementById('editRegBox1').value.trim() || '/?dl=9jqm90';
+        currentSettings.box2Reg = document.getElementById('editRegBox2').value.trim() || '/?dl=ddw7cs';
+        currentSettings.box3Reg = document.getElementById('editRegBox3').value.trim() || '/?dl=edzskt';
+        currentSettings.box4Reg = document.getElementById('editRegBox4').value.trim() || '/?dl=1vznwe';
+
+        currentSettings.claim = document.getElementById('editClaimPath').value.trim() || '/home/event';
+        currentSettings.profile = document.getElementById('editProfilePath').value.trim() || '/home/mine';
+        currentSettings.lottery = document.getElementById('editLotteryPath').value.trim() || '/home/lottery?id=133000';
+
+        localStorage.setItem('cyclone_custom_box_paths', JSON.stringify(currentSettings));
+        renderNavButtons();
+        loadAllRegisterPaths();
+        closeMenu();
+        showToast('✅ All custom box paths saved & loaded!');
+    }
+
+    // Load initial registration codes per box
+    function loadAllRegisterPaths() {
+        setBoxPath('f1', 'badge1', currentSettings.box1Reg);
+        setBoxPath('f2', 'badge2', currentSettings.box2Reg);
+        setBoxPath('f3', 'badge3', currentSettings.box3Reg);
+        setBoxPath('f4', 'badge4', currentSettings.box4Reg);
+        closeMenu();
+    }
+
+    // Apply a single shared path across all 4 boxes
+    function loadAllPath(path) {
+        ['f1', 'f2', 'f3', 'f4'].forEach((id, index) => {
+            setBoxPath(id, `badge${index + 1}`, path);
+        });
+        closeMenu();
+    }
+
+    // Helper to update iframe source & top badge label
+    function setBoxPath(iframeId, badgeId, path) {
+        const fullUrl = domains[iframeId] + path;
+        document.getElementById(iframeId).src = fullUrl;
+        document.getElementById(badgeId).textContent = path;
+    }
+
+    // Reload all boxes
+    function reloadAll() {
+        ['f1', 'f2', 'f3', 'f4'].forEach(id => { 
+            const iframe = document.getElementById(id);
+            iframe.src = iframe.src; 
+        });
+        closeMenu();
+        showToast('🔄 All grid frames reloaded');
+    }
+
+    // Reload individual box
+    function reloadBox(id) { 
+        const iframe = document.getElementById(id);
+        iframe.src = iframe.src; 
+        closeMenu();
+    }
+
+    // Open single box URL in browser tab
+    function openNewTab(id) {
+        let currentUrl = document.getElementById(id).src;
+        if(currentUrl) {
+            window.open(currentUrl, '_blank');
+        }
+        closeMenu();
+    }
+
+    let currentlyMaximizedBox = null;
+
+    // Open/Close Sidebar Navigation
+    function openMenu() {
+        document.getElementById('sidebarMenu').classList.add('active');
+        document.getElementById('menuOverlay').classList.add('active');
+        document.getElementById('menuBtnToggle').classList.add('hidden');
+    }
+
+    function closeMenu() {
+        document.getElementById('sidebarMenu').classList.remove('active');
+        document.getElementById('menuOverlay').classList.remove('active');
+        if (!currentlyMaximizedBox) {
+            document.getElementById('menuBtnToggle').classList.remove('hidden');
+        }
+    }
+
+    // Maximize box full screen toggle
+    function toggleMaximize(boxId) {
+        const targetBox = document.getElementById(boxId);
+        
+        if (currentlyMaximizedBox && currentlyMaximizedBox !== boxId) {
+            document.getElementById(currentlyMaximizedBox).classList.remove('maximized');
+        }
+
+        if (targetBox.classList.contains('maximized')) {
+            exitMaximize();
+        } else {
+            targetBox.classList.add('maximized');
+            currentlyMaximizedBox = boxId;
+            document.getElementById('exitFsBtn').style.display = 'block';
+            document.getElementById('menuBtnToggle').classList.add('hidden');
+            closeMenu();
+        }
+    }
+
+    function exitMaximize() {
+        if (currentlyMaximizedBox) {
+            document.getElementById(currentlyMaximizedBox).classList.remove('maximized');
+            currentlyMaximizedBox = null;
+        }
+        document.getElementById('exitFsBtn').style.display = 'none';
+        document.getElementById('menuBtnToggle').classList.remove('hidden');
+    }
+
+    // Initialize application on page load
+    window.onload = function() {
+        loadSavedPaths();
+        loadAllRegisterPaths();
+    };
+</script>
+</body>
+</html>

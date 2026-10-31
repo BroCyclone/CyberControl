@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"/>
+<title>MMR CUSTOMIZE BY CYCLONE</title>
+<style>
+    :root {
+        --primary: #06b6d4; 
+        --bg-dark: #07090e;
+        --glass-bg: rgba(15, 23, 42, 0.85);
+        --glass-border: rgba(6, 182, 212, 0.25);
+        --text-main: #f8fafc;
+        --accent: #f59e0b;
+        --neon-glow: 0 0 15px rgba(6, 182, 212, 0.25);
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { height: 100%; overflow: hidden; background: var(--bg-dark); font-family: system-ui, -apple-system, sans-serif; }
+
+    .grid { height: 100%; display: grid; gap: 8px; padding: 8px; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; transition: all 0.3s; }
+    
+    /* Box Styles with Cyberpunk Glassmorphism */
+    .box { position: relative; border-radius: 12px; overflow: hidden; border: 1px solid var(--glass-border); background: #000; box-shadow: var(--neon-glow); transition: all 0.3s ease; }
+    iframe { width: 100%; height: 100%; border: none; background: #000; }
+
+    /* Custom CSS Fake Fullscreen */
+    .box.maximized {
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        width: 100vw !important;
+        height: 100vh !important;
+        z-index: 99999 !important;
+        border-radius: 0 !important;
+        border: none !important;
+    }
+
+    /* Right-Center Edge Menu Button */
+    .menuBtn { 
+        position: fixed; top: 50%; right: 0; transform: translateY(-50%); z-index: 10000; 
+        width: 32px; height: 64px; border-radius: 12px 0 0 12px; 
+        background: var(--glass-bg); color: var(--primary); border: 1px solid var(--primary); border-right: none; 
+        cursor: pointer; font-size: 18px; display: flex; align-items: center; justify-content: center; 
+        backdrop-filter: blur(12px); box-shadow: -4px 0 20px rgba(6, 182, 212, 0.3); transition: opacity 0.2s;
+    }
+    .menuBtn.hidden { opacity: 0; pointer-events: none; }
+
+    /* Sidebar Menu */
+    .sidebar { position: fixed; top: 0; right: -360px; width: 320px; height: 100%; background: var(--glass-bg); backdrop-filter: blur(25px); z-index: 10002; padding: 20px; transition: 0.35s cubic-bezier(0.4, 0, 0.2, 1); color: var(--text-main); overflow-y: auto; box-shadow: -10px 0 30px rgba(0,0,0,0.7); border-left: 1px solid var(--glass-border); }
+    .sidebar.active { right: 0; }
+
+    /* Click Outside Overlay Backdrop */
+    .menu-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.6); z-index: 10001; display: none; backdrop-filter: blur(3px); }
+    .menu-overlay.active { display: block; }
+
+    .section-title { color: var(--primary); margin: 15px 0 8px; font-weight: 700; border-bottom: 1px solid rgba(6, 182, 212, 0.3); padding-bottom: 5px; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; display: flex; justify-content: space-between; align-items: center; }
+    
+    .nav-btn { width: 100%; padding: 10px 14px; margin: 5px 0; background: rgba(255,255,255,0.04); color: var(--text-main); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 500; text-align: left; transition: all 0.2s; }
+    .nav-btn:hover { background: rgba(6, 182, 212, 0.15); border-color: var(--primary); box-shadow: 0 0 10px rgba(6,182,212,0.2); }
+    .btn-highlight { background: rgba(245, 158, 11, 0.12); border-color: rgba(245, 158, 11, 0.4); color: #fbd38d; font-weight: bold; }
+    .btn-highlight:hover { background: var(--accent); color: #000; }
+
+    /* Link Editor UI inside Sidebar */
+    .link-editor-container { background: rgba(0,0,0,0.3); padding: 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.06); margin-top: 6px; }
+    .link-edit-row { display: flex; gap: 6px; margin-bottom: 6px; align-items: center; }
+    .link-edit-row input { flex: 1; background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.15); border-radius: 6px; color: white; padding: 6px 10px; font-size: 12px; outline: none; }
+    .link-edit-row input:focus { border-color: var(--primary); box-shadow: 0 0 5px rgba(6,182,212,0.3); }
+    .link-edit-row span { font-size: 11px; color: #94a3b8; width: 55px; font-weight: 600; }
+    .save-links-btn { width: 100%; padding: 8px; background: #059669; color: white; border: none; border-radius: 6px; font-weight: bold; font-size: 12px; cursor: pointer; margin-top: 6px; transition: background 0.2s; }
+    .save-links-btn:hover { background: #10b981; }
+
+    /* Compact 2x2 Box Controls */
+    .controls-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 10px; }
+    .mini-control { display: flex; flex-direction: column; gap: 4px; background: rgba(255,255,255,0.03); padding: 8px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.06); align-items: center; }
+    .mini-control span { font-size: 11px; font-weight: bold; color: #94a3b8; }
+    .mini-control-btns { display: flex; gap: 4px; width: 100%; justify-content: center; }
+    .btn-icon { flex: 1; padding: 6px 0; border: none; border-radius: 5px; cursor: pointer; color: white; font-size: 12px; text-align: center; transition: filter 0.2s; }
+    .btn-icon:hover { filter: brightness(1.2); }
+
+    /* Close Maximize Button */
+    .exit-fs-btn { display: none; position: fixed; top: 12px; left: 50%; transform: translateX(-50%); z-index: 2147483647; padding: 8px 18px; background: rgba(239, 68, 68, 0.95); color: white; border: none; border-radius: 20px; font-weight: bold; cursor: pointer; box-shadow: 0 4px 15px rgba(239,68,68,0.4); font-size: 13px; letter-spacing: 0.5px; }
+</style>
+</head>
+<body>
+
+<div class="grid" id="viewGrid">
+    <div class="box" id="b1"><iframe id="f1" src=""></iframe></div>
+    <div class="box" id="b2"><iframe id="f2" src=""></iframe></div>
+    <div class="box" id="b3"><iframe id="f3" src=""></iframe></div>
+    <div class="box" id="b4"><iframe id="f4" src=""></iframe></div>
+</div>
+
+<button class="menuBtn" id="menuBtnToggle" onclick="openMenu()">🛠️</button>
+<div class="menu-overlay" id="menuOverlay" onclick="closeMenu()"></div>
+<button class="exit-fs-btn" id="exitFsBtn" onclick="exitMaximize()">✕ Close Fullscreen</button>
+
+<div class="sidebar" id="sidebarMenu">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 12px;">
+        <h2 style="font-size: 16px; color: var(--primary); letter-spacing: 0.5px;">CYBER CONTROL</h2>
+        <button onclick="closeMenu()" style="background:none; border:none; color:#94a3b8; font-size:18px; cursor:pointer;">✕</button>
+    </div>
+
+    <div class="section-title">⭐ QUICK ACCESS</div>
+    <div id="dynamicNavContainer">
+        <!-- Dynamic Quick Access Buttons will be injected here -->
+    </div>
+
+    <div class="section-title">⚙️ CUSTOMIZE PATHS</div>
+    <div class="link-editor-container">
+        <div class="link-edit-row">
+            <span>Register</span>
+            <input type="text" id="editRegPath" placeholder="/?dl=dekwsw">
+        </div>
+        <div class="link-edit-row">
+            <span>Claim</span>
+            <input type="text" id="editClaimPath" placeholder="/home/event">
+        </div>
+        <div class="link-edit-row">
+            <span>Profile</span>
+            <input type="text" id="editProfilePath" placeholder="/home/mine">
+        </div>
+        <div class="link-edit-row">
+            <span>Lottery</span>
+            <input type="text" id="editLotteryPath" placeholder="/home/lottery?id=133000">
+        </div>
+        <button class="save-links-btn" onclick="saveCustomPaths()">💾 Save Paths</button>
+    </div>
+
+    <div class="section-title">📊 OTHER ACTIONS</div>
+    <button class="nav-btn" onclick="loadAllPath('/home/lottery/record?id=133000&type=unsettled')">📜 Bet History</button>
+    <button class="nav-btn" style="border-color: rgba(6,182,212,0.4);" onclick="reloadAll()">🔄 Reload All Grids</button>
+
+    <div class="section-title">🎛️ BOX CONTROLS</div>
+    <div class="controls-grid" id="controls">
+        <script>
+            ['1','2','3','4'].forEach((num) => {
+                document.write(`
+                    <div class="mini-control">
+                        <span>Box ${num}</span>
+                        <div class="mini-control-btns">
+                            <button class="btn-icon" style="background:#3b82f6" onclick="reloadBox('f${num}')">🔄</button>
+                            <button class="btn-icon" style="background:#ef4444" onclick="toggleMaximize('b${num}')">⛶</button>
+                            <button class="btn-icon" style="background:#10b981" onclick="openNewTab('f${num}')">↗️</button>
+                        </div>
+                    </div>
+                `);
+            });
+        </script>
+    </div>
+</div>
+
+<script>
+    const domains = {
+        'f1': 'https://mmr.game', 
+        'f2': 'https://mmmr.club', 
+        'f3': 'https://www.mmmr.club', 
+        'f4': 'https://www.mmrgame.app'
+    };
+
+    // Default Paths
+    let currentPaths = {
+        register: '/?dl=5jpvu9',
+        register1: '/?dl=dirc0q',
+        register2: '/?dl=2ijw6j',
+        register3: '/?dl=e7nbtx'
+    };
+
+    // Load saved paths from localStorage if available
+    function loadSavedPaths() {
+        const saved = localStorage.getItem('cyclone_custom_paths');
+        if (saved) {
+            try {
+                currentPaths = JSON.parse(saved);
+            } catch(e) {}
+        }
+        // Populate inputs
+        document.getElementById('editRegPath').value = currentPaths.register;
+        document.getElementById('editClaimPath').value = currentPaths.claim;
+        document.getElementById('editProfilePath').value = currentPaths.profile;
+        document.getElementById('editLotteryPath').value = currentPaths.lottery;
+
+        renderNavButtons();
+    }
+
+    function renderNavButtons() {
+        const container = document.getElementById('dynamicNavContainer');
+        container.innerHTML = `
+            <button class="nav-btn" onclick="loadAllPath('${currentPaths.register}')">📝 Register</button>
+            <button class="nav-btn" onclick="loadAllPath('${currentPaths.claim}')">🎁 Claim Page</button>
+            <button class="nav-btn" onclick="loadAllPath('${currentPaths.profile}')">👤 Profile</button>
+            <button class="nav-btn btn-highlight" onclick="loadAllPath('${currentPaths.lottery}')">🔥 Bet 9.85x Odd</button>
+        `;
+    }
+
+    function saveCustomPaths() {
+        currentPaths.register = document.getElementById('editRegPath').value.trim() || '/?dl=dekwsw';
+        currentPaths.claim = document.getElementById('editClaimPath').value.trim() || '/home/event';
+        currentPaths.profile = document.getElementById('editProfilePath').value.trim() || '/home/mine';
+        currentPaths.lottery = document.getElementById('editLotteryPath').value.trim() || '/home/lottery?id=133000';
+
+        localStorage.setItem('cyclone_custom_paths', JSON.stringify(currentPaths));
+        renderNavButtons();
+        alert('✅ Custom Paths successfully saved!');
+        closeMenu();
+    }
+
+    let currentlyMaximizedBox = null;
+
+    function openMenu() {
+        document.getElementById('sidebarMenu').classList.add('active');
+        document.getElementById('menuOverlay').classList.add('active');
+        document.getElementById('menuBtnToggle').classList.add('hidden');
+    }
+
+    function closeMenu() {
+        document.getElementById('sidebarMenu').classList.remove('active');
+        document.getElementById('menuOverlay').classList.remove('active');
+        if (!currentlyMaximizedBox) {
+            document.getElementById('menuBtnToggle').classList.remove('hidden');
+        }
+    }
+
+    function loadAllPath(path) {
+        Object.keys(domains).forEach(id => { 
+            document.getElementById(id).src = domains[id] + path; 
+        });
+        closeMenu();
+    }
+
+    function reloadAll() {
+        Object.keys(domains).forEach(id => { 
+            const iframe = document.getElementById(id);
+            iframe.src = iframe.src; 
+        });
+        closeMenu();
+    }
+
+    function reloadBox(id) { 
+        const iframe = document.getElementById(id);
+        iframe.src = iframe.src; 
+        closeMenu();
+    }
+
+    function openNewTab(id) {
+        let currentUrl = document.getElementById(id).src;
+        window.open(currentUrl, '_blank');
+        closeMenu();
+    }
+
+    function toggleMaximize(boxId) {
+        const targetBox = document.getElementById(boxId);
+        
+        if (currentlyMaximizedBox) {
+            document.getElementById(currentlyMaximizedBox).classList.remove('maximized');
+        }
+
+        targetBox.classList.add('maximized');
+        currentlyMaximizedBox = boxId;
+        
+        document.getElementById('exitFsBtn').style.display = 'block';
+        document.getElementById('menuBtnToggle').classList.add('hidden');
+        
+        closeMenu();
+    }
+
+    function exitMaximize() {
+        if (currentlyMaximizedBox) {
+            document.getElementById(currentlyMaximizedBox).classList.remove('maximized');
+            currentlyMaximizedBox = null;
+        }
+        document.getElementById('exitFsBtn').style.display = 'none';
+        document.getElementById('menuBtnToggle').classList.remove('hidden');
+    }
+
+    // Initialize on page load
+    window.onload = function() {
+        loadSavedPaths();
+        // Initial load for all iframes with saved register path
+        Object.keys(domains).forEach(id => { 
+            document.getElementById(id).src = domains[id] + currentPaths.register; 
+        });
+    };
+</script>
+</body>
+</html>

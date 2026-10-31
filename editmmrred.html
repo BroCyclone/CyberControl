@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"/>
+<title>MMR CUSTOMIZE BY CYCLONE</title>
+<style>
+    :root {
+        --primary: #06b6d4; 
+        --bg-dark: #07090e;
+        --glass-bg: rgba(15, 23, 42, 0.85);
+        --glass-border: rgba(6, 182, 212, 0.25);
+        --text-main: #f8fafc;
+        --accent: #f59e0b;
+        --neon-glow: 0 0 15px rgba(6, 182, 212, 0.25);
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { height: 100%; overflow: hidden; background: var(--bg-dark); font-family: system-ui, -apple-system, sans-serif; }
+
+    .grid { height: 100%; display: grid; gap: 8px; padding: 8px; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; transition: all 0.3s; }
+    
+    /* Box Styles */
+    .box { position: relative; border-radius: 12px; overflow: hidden; border: 1px solid var(--glass-border); background: #000; box-shadow: var(--neon-glow); transition: all 0.3s ease; display: flex; flex-direction: column; }
+    iframe { width: 100%; height: 100%; border: none; background: #000; flex: 1; }
+    
+    /* Frozen / Muted Box State */
+    .box.frozen iframe { display: none; }
+    .frozen-placeholder {
+        display: none;
+        position: absolute;
+        top: 0; left: 0; width: 100%; height: 100%;
+        background: rgba(15, 23, 42, 0.95);
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        color: #94a3b8;
+        gap: 10px;
+        z-index: 5;
+    }
+    .box.frozen .frozen-placeholder { display: flex; }
+    .unfreeze-btn {
+        padding: 6px 14px;
+        background: var(--primary);
+        color: #000;
+        border: none;
+        border-radius: 6px;
+        font-weight: bold;
+        cursor: pointer;
+        font-size: 12px;
+    }
+
+    /* Custom CSS Fake Fullscreen */
+    .box.maximized {
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        width: 100vw !important;
+        height: 100vh !important;
+        z-index: 99999 !important;
+        border-radius: 0 !important;
+        border: none !important;
+    }
+
+    /* Right-Center Edge Menu Button */
+    .menuBtn { 
+        position: fixed; top: 50%; right: 0; transform: translateY(-50%); z-index: 10000; 
+        width: 32px; height: 64px; border-radius: 12px 0 0 12px; 
+        background: var(--glass-bg); color: var(--primary); border: 1px solid var(--primary); border-right: none; 
+        cursor: pointer; font-size: 18px; display: flex; align-items: center; justify-content: center; 
+        backdrop-filter: blur(12px); box-shadow: -4px 0 20px rgba(6, 182, 212, 0.3); transition: opacity 0.2s;
+    }
+    .menuBtn.hidden { opacity: 0; pointer-events: none; }
+
+    /* Sidebar Menu */
+    .sidebar { position: fixed; top: 0; right: -380px; width: 340px; height: 100%; background: var(--glass-bg); backdrop-filter: blur(25px); z-index: 10002; padding: 20px; transition: 0.35s cubic-bezier(0.4, 0, 0.2, 1); color: var(--text-main); overflow-y: auto; box-shadow: -10px 0 30px rgba(0,0,0,0.7); border-left: 1px solid var(--glass-border); }
+    .sidebar.active { right: 0; }
+
+    .menu-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.6); z-index: 10001; display: none; backdrop-filter: blur(3px); }
+    .menu-overlay.active { display: block; }
+
+    .section-title { color: var(--primary); margin: 15px 0 8px; font-weight: 700; border-bottom: 1px solid rgba(6, 182, 212, 0.3); padding-bottom: 5px; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; }
+    
+    .nav-btn { width: 100%; padding: 10px 14px; margin: 5px 0; background: rgba(255,255,255,0.04); color: var(--text-main); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 500; text-align: left; transition: all 0.2s; }
+    .nav-btn:hover { background: rgba(6, 182, 212, 0.15); border-color: var(--primary); box-shadow: 0 0 10px rgba(6,182,212,0.2); }
+    .btn-highlight { background: rgba(245, 158, 11, 0.12); border-color: rgba(245, 158, 11, 0.4); color: #fbd38d; font-weight: bold; }
+    .btn-highlight:hover { background: var(--accent); color: #000; }
+
+    /* Per-Box Custom Path Editor Container */
+    .path-editor-box { background: rgba(0,0,0,0.3); padding: 8px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.06); margin-bottom: 8px; }
+    .path-row { display: flex; gap: 6px; margin-bottom: 4px; align-items: center; }
+    .path-row span { font-size: 11px; color: var(--primary); width: 45px; font-weight: bold; }
+    .path-row input { flex: 1; background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.15); border-radius: 5px; color: white; padding: 5px 8px; font-size: 11px; outline: none; }
+    .save-paths-btn { width: 100%; padding: 8px; background: #059669; color: white; border: none; border-radius: 6px; font-weight: bold; font-size: 12px; cursor: pointer; margin-top: 4px; }
+    .save-paths-btn:hover { background: #10b981; }
+
+    /* Compact 2x2 Box Controls */
+    .controls-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 10px; }
+    .mini-control { display: flex; flex-direction: column; gap: 4px; background: rgba(255,255,255,0.03); padding: 8px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.06); align-items: center; }
+    .mini-control span { font-size: 11px; font-weight: bold; color: #94a3b8; }
+    .mini-control-btns { display: flex; gap: 3px; width: 100%; justify-content: center; }
+    .btn-icon { flex: 1; padding: 5px 0; border: none; border-radius: 4px; cursor: pointer; color: white; font-size: 11px; text-align: center; }
+
+    .exit-fs-btn { display: none; position: fixed; top: 12px; left: 50%; transform: translateX(-50%); z-index: 2147483647; padding: 8px 18px; background: rgba(239, 68, 68, 0.95); color: white; border: none; border-radius: 20px; font-weight: bold; cursor: pointer; box-shadow: 0 4px 15px rgba(239,68,68,0.4); font-size: 13px; }
+</style>
+</head>
+<body>
+
+<div class="grid" id="viewGrid">
+    <div class="box" id="b1">
+        <iframe id="f1" src=""></iframe>
+        <div class="frozen-placeholder"><span>⏸️ Box 1 Muted & Frozen</span><button class="unfreeze-btn" onclick="toggleFreeze('1')">▶️ Resume</button></div>
+    </div>
+    <div class="box" id="b2">
+        <iframe id="f2" src=""></iframe>
+        <div class="frozen-placeholder"><span>⏸️ Box 2 Muted & Frozen</span><button class="unfreeze-btn" onclick="toggleFreeze('2')">▶️ Resume</button></div>
+    </div>
+    <div class="box" id="b3">
+        <iframe id="f3" src=""></iframe>
+        <div class="frozen-placeholder"><span>⏸️ Box 3 Muted & Frozen</span><button class="unfreeze-btn" onclick="toggleFreeze('3')">▶️ Resume</button></div>
+    </div>
+    <div class="box" id="b4">
+        <iframe id="f4" src=""></iframe>
+        <div class="frozen-placeholder"><span>⏸️ Box 4 Muted & Frozen</span><button class="unfreeze-btn" onclick="toggleFreeze('4')">▶️ Resume</button></div>
+    </div>
+</div>
+
+<button class="menuBtn" id="menuBtnToggle" onclick="openMenu()">🛠️</button>
+<div class="menu-overlay" id="menuOverlay" onclick="closeMenu()"></div>
+<button class="exit-fs-btn" id="exitFsBtn" onclick="exitMaximize()">✕ Close Fullscreen</button>
+
+<div class="sidebar" id="sidebarMenu">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 12px;">
+        <h2 style="font-size: 16px; color: var(--primary);">CYBER CONTROL</h2>
+        <button onclick="closeMenu()" style="background:none; border:none; color:#94a3b8; font-size:18px; cursor:pointer;">✕</button>
+    </div>
+
+    <div class="section-title">⚙️ CUSTOMIZE BOX PATHS</div>
+    <div class="path-editor-box">
+        <div class="path-row"><span>Box 1</span><input type="text" id="path1" placeholder="/?dl=3qb6lq"></div>
+        <div class="path-row"><span>Box 2</span><input type="text" id="path2" placeholder="/?dl=3r9tw3"></div>
+        <div class="path-row"><span>Box 3</span><input type="text" id="path3" placeholder="/?dl=6vqnwo"></div>
+        <div class="path-row"><span>Box 4</span><input type="text" id="path4" placeholder="/?dl=bfh84y"></div>
+        <button class="save-paths-btn" onclick="saveBoxPaths()">💾 Save & Apply Paths</button>
+    </div>
+
+    <div class="section-title">📊 GLOBAL ACTIONS</div>
+    <button class="nav-btn" style="border-color: rgba(6,182,212,0.4);" onclick="reloadAll()">🔄 Reload All Active Grids</button>
+
+    <div class="section-title">🎛️ BOX CONTROLS (MUTE / MAX)</div>
+    <div class="controls-grid" id="controls">
+        <script>
+            ['1','2','3','4'].forEach((num) => {
+                document.write(`
+                    <div class="mini-control">
+                        <span>Box ${num}</span>
+                        <div class="mini-control-btns">
+                            <button class="btn-icon" style="background:#f59e0b" onclick="toggleFreeze('${num}')" title="Mute/Unmute">🔇</button>
+                            <button class="btn-icon" style="background:#3b82f6" onclick="reloadBox('f${num}')" title="Reload">🔄</button>
+                            <button class="btn-icon" style="background:#ef4444" onclick="toggleMaximize('b${num}')" title="Fullscreen">⛶</button>
+                            <button class="btn-icon" style="background:#10b981" onclick="openNewTab('f${num}')" title="New Tab">↗️</button>
+                        </div>
+                    </div>
+                `);
+            });
+        </script>
+    </div>
+</div>
+
+<script>
+    const domains = {
+        '1': 'https://mmr.game', 
+        '2': 'https://mmmr.club', 
+        '3': 'https://www.mmmr.club', 
+        '4': 'https://mmrgame.app'
+    };
+
+    let boxPaths = {
+        '1': '/?dl=3qb6lq',
+        '2': '/?dl=3r9tw3',
+        '3': '/?dl=6vqnwo',
+        '4': '/?dl=bfh84y'
+    };
+
+    let frozenStates = { '1': false, '2': false, '3': false, '4': false };
+
+    function loadSavedPaths() {
+        const saved = localStorage.getItem('cyclone_per_box_paths_v2');
+        if (saved) {
+            try { boxPaths = JSON.parse(saved); } catch(e){}
+        }
+        for (let i = 1; i <= 4; i++) {
+            document.getElementById('path' + i).value = boxPaths[i];
+        }
+    }
+
+    function saveBoxPaths() {
+        for (let i = 1; i <= 4; i++) {
+            let val = document.getElementById('path' + i).value.trim();
+            if (val) boxPaths[i] = val;
+        }
+        localStorage.setItem('cyclone_per_box_paths_v2', JSON.stringify(boxPaths));
+        applyBoxPaths();
+        alert('✅ Per-box custom paths saved successfully!');
+        closeMenu();
+    }
+
+    function applyBoxPaths() {
+        for (let i = 1; i <= 4; i++) {
+            if (!frozenStates[i]) {
+                document.getElementById('f' + i).src = domains[i] + boxPaths[i];
+            }
+        }
+    }
+
+    let storedSrcs = {};
+    function toggleFreeze(num) {
+        const box = document.getElementById('b' + num);
+        const iframe = document.getElementById('f' + num);
+        
+        if (!frozenStates[num]) {
+            storedSrcs[num] = iframe.src;
+            iframe.src = 'about:blank';
+            box.classList.add('frozen');
+            frozenStates[num] = true;
+        } else {
+            box.classList.remove('frozen');
+            iframe.src = storedSrcs[num] || (domains[num] + boxPaths[num]);
+            frozenStates[num] = false;
+        }
+    }
+
+    let currentlyMaximizedBox = null;
+
+    function openMenu() {
+        document.getElementById('sidebarMenu').classList.add('active');
+        document.getElementById('menuOverlay').classList.add('active');
+        document.getElementById('menuBtnToggle').classList.add('hidden');
+    }
+
+    function closeMenu() {
+        document.getElementById('sidebarMenu').classList.remove('active');
+        document.getElementById('menuOverlay').classList.remove('active');
+        if (!currentlyMaximizedBox) {
+            document.getElementById('menuBtnToggle').classList.remove('hidden');
+        }
+    }
+
+    function reloadAll() {
+        for (let i = 1; i <= 4; i++) {
+            if (!frozenStates[i]) {
+                const iframe = document.getElementById('f' + i);
+                iframe.src = iframe.src;
+            }
+        }
+        closeMenu();
+    }
+
+    function reloadBox(id) { 
+        const num = id.replace('f', '');
+        if (!frozenStates[num]) {
+            const iframe = document.getElementById(id);
+            iframe.src = iframe.src; 
+        }
+        closeMenu();
+    }
+
+    function openNewTab(id) {
+        let currentUrl = document.getElementById(id).src;
+        if(currentUrl && currentUrl !== 'about:blank') {
+            window.open(currentUrl, '_blank');
+        }
+        closeMenu();
+    }
+
+    function toggleMaximize(boxId) {
+        const targetBox = document.getElementById(boxId);
+        if (currentlyMaximizedBox) {
+            document.getElementById(currentlyMaximizedBox).classList.remove('maximized');
+        }
+        targetBox.classList.add('maximized');
+        currentlyMaximizedBox = boxId;
+        document.getElementById('exitFsBtn').style.display = 'block';
+        document.getElementById('menuBtnToggle').classList.add('hidden');
+        closeMenu();
+    }
+
+    function exitMaximize() {
+        if (currentlyMaximizedBox) {
+            document.getElementById(currentlyMaximizedBox).classList.remove('maximized');
+            currentlyMaximizedBox = null;
+        }
+        document.getElementById('exitFsBtn').style.display = 'none';
+        document.getElementById('menuBtnToggle').classList.remove('hidden');
+    }
+
+    window.onload = function() {
+        loadSavedPaths();
+        applyBoxPaths();
+    };
+</script>
+</body>
+</html>
